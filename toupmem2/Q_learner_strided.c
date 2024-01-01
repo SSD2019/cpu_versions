@@ -62,7 +62,7 @@ void* thread_function(void* arg) {
 }
 
 int main() {
-    FILE *file = fopen("/home/kailash/Downloads/Datasets/FrozenLake_trajectories_1m.txt", "r");
+    FILE *file = fopen("/home/upmem0013/kailashg26/Kailash_ISPASS2024/Datasets/FrozenLake_trajectories_1m.txt", "r");
     if (file == NULL) {
         perror("Error opening the data file");
         return 1;

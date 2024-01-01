@@ -40,16 +40,16 @@
 #define NUM_THREADS 16  // Number of threads
 
 
-//pthread_mutex_t q_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t q_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 // Define LCG parameters
- // #define LCG_A 1664525
- // #define LCG_C 1013904223
+  #define LCG_A 1664525
+  #define LCG_C 1013904223
 
  // // Custom random number generator
- // unsigned int custom_rand(unsigned int *seed) {
- //     *seed = (*seed * LCG_A + LCG_C);
- //         return *seed;
- //    }
+  unsigned int custom_rand(unsigned int *seed) {
+      *seed = (*seed * LCG_A + LCG_C);
+          return *seed;
+     }
 
 
 
@@ -106,7 +106,7 @@ void* thread_function(void *arg) {
 
 
 int main() {
-    FILE *file = fopen("/home/kailash/Downloads/Datasets/FrozenLake_trajectories_1m.txt", "r");
+    FILE *file = fopen("/home/upmem0013/kailashg26/Kailash_ISPASS2024/Datasets/FrozenLake_trajectories_1m.txt", "r");
     if (file == NULL) {
         perror("Error opening the data file");
         return 1;

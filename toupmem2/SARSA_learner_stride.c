@@ -14,6 +14,19 @@
 #define BATCH_CAPACITY 1000000
 #define STRIDE 4
 #define NUM_THREADS 16  // Define the number of threads
+#define EPSILON 0.1
+
+pthread_mutex_t q_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+// Define LCG parameters
+ #define LCG_A 1664525
+ #define LCG_C 1013904223
+
+ // // Custom random number generator
+ unsigned int custom_rand(unsigned int *seed) {
+     *seed = (*seed * LCG_A + LCG_C);
+         return *seed;
+    }
+
 
 double q_table[NUM_STATES][NUM_ACTIONS] = {{0.0}};
 // pthread_mutex_t mutex;
@@ -31,8 +44,8 @@ typedef struct {
 } ThreadArg;
 
 // Function to choose the next action based on the epsilon-greedy policy
-int choose_action(int state) {
-    double rand_val = (double)rand() / RAND_MAX;
+int choose_action(unsigned int *rand_seed, int state) {
+    double rand_val = (double)custom_rand(rand_seed) / RAND_MAX;
     if (rand_val < EPSILON) {
         // Exploration: choose a random action
         return rand() % NUM_ACTIONS;
@@ -50,14 +63,14 @@ int choose_action(int state) {
     }
 }
 
-void update_q_table(Experience experience) {
+void update_q_table(unsigned int *rand_seed, Experience experience) {
     int s = experience.state;
     int a = experience.action;
     double r = experience.reward;
     int next_s = experience.next_state;
 
     // Determine the next action based on the current policy
-    int next_a = choose_action(next_s);
+    int next_a = choose_action(rand_seed,next_s);
 
     // SARSA Q-value update
     double next_q = q_table[next_s][next_a];
@@ -71,11 +84,12 @@ void* thread_function(void* arg) {
     Experience* dataset = thread_arg->dataset;
     int start = thread_arg->start;
 
+    unsigned int rand_seed2 = 42;
     for (int episode = 0; episode < NUM_EPISODES; episode++) {
         for (int start = 0; start < STRIDE; start++) {
             for (int i = 0; i < BATCH_SIZE / STRIDE; i++) {
                 int index = start + i * STRIDE;
-                update_q_table(dataset[index]);
+		update_q_table(&rand_seed2, dataset[index]);
             }
         }
     }
@@ -83,7 +97,7 @@ void* thread_function(void* arg) {
 }
 
 int main() {
-    FILE *file = fopen("/home/kailash/Downloads/Datasets/FrozenLake_trajectories_1m.txt", "r");
+    FILE *file = fopen("/home/upmem0013/kailashg26/Kailash_ISPASS2024/Datasets/FrozenLake_trajectories_1m.txt", "r");
     if (file == NULL) {
         perror("Error opening the data file");
         return 1;

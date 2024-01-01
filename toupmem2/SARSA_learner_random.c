@@ -13,18 +13,19 @@
 #define BATCH_SIZE 500
 #define BATCH_CAPACITY 1000000
 #define NUM_THREADS 16  // Number of threads
+#define EPSILON 0.1 // For epsilon-greedy policy
 
 
-//pthread_mutex_t q_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t q_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 // Define LCG parameters
- // #define LCG_A 1664525
- // #define LCG_C 1013904223
+ #define LCG_A 1664525
+ #define LCG_C 1013904223
 
  // // Custom random number generator
- // unsigned int custom_rand(unsigned int *seed) {
- //     *seed = (*seed * LCG_A + LCG_C);
- //         return *seed;
- //    }
+ unsigned int custom_rand(unsigned int *seed) {
+     *seed = (*seed * LCG_A + LCG_C);
+         return *seed;
+    }
 
 
 
@@ -45,11 +46,11 @@ typedef struct {
 } ThreadArg;
 
 // Function to choose the next action based on the epsilon-greedy policy
-int choose_action(int state) {
-    double rand_val = (double)rand() / RAND_MAX;
+int choose_action(unsigned int *rand_seed, int state) {
+    double rand_val = (double)custom_rand(rand_seed) / RAND_MAX;
     if (rand_val < EPSILON) {
         // Exploration: choose a random action
-        return rand() % NUM_ACTIONS;
+        return rand_val % NUM_ACTIONS;
     } else {
         // Exploitation: choose the best action based on the Q-table
         int best_action = 0;
@@ -64,14 +65,14 @@ int choose_action(int state) {
     }
 }
 
-void update_q_table(Experience experience) {
+void update_q_table(unsigned int *rand_seed, Experience experience) {
     int s = experience.state;
     int a = experience.action;
     double r = experience.reward;
     int next_s = experience.next_state;
 
     // Determine the next action based on the current policy
-    int next_a = choose_action(next_s);
+    int next_a = choose_action(rand_seed, next_s);
 
     // SARSA Q-value update
     double next_q = q_table[next_s][next_a];
@@ -83,15 +84,16 @@ void* thread_function(void *arg) {
     ThreadArg *thread_arg = (ThreadArg *)arg;
     Experience *dataset = thread_arg->dataset;
 
-    //unsigned int rand_seed = 42;
+    unsigned int rand_seed = 42;
+    unsigned int rand_seed2 = 42;
 
     for (int episode = 0; episode < NUM_EPISODES; episode++) {
         int start_index = thread_arg->start_index;
         int end_index = thread_arg->end_index;  // Corrected line
 
         for (int i = start_index; i < end_index; i++) {
-            int random_index = rand() % ((end_index - start_index) + start_index);
-            update_q_table(dataset[random_index]);
+            int random_index = custom_rand(&rand_seed) % ((end_index - start_index) + start_index);
+            update_q_table(&rand_seed2, dataset[random_index]);
         }
     }
 
@@ -101,7 +103,7 @@ void* thread_function(void *arg) {
 
 
 int main() {
-    FILE *file = fopen("/home/kailash/Downloads/Datasets/FrozenLake_trajectories_1m.txt", "r");
+    FILE *file = fopen("/home/upmem0013/kailashg26/Kailash_ISPASS2024/Datasets/FrozenLake_trajectories_1m.txt", "r");
     if (file == NULL) {
         perror("Error opening the data file");
         return 1;

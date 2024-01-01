@@ -199,7 +199,7 @@ void* thread_function(void *arg) {
 
 
 int main() {
-    FILE *file = fopen("/home/kailash/Downloads/FrozenLake_trajectories_20m.txt", "r");
+    FILE *file = fopen("/home/upmem0013/kailashg26/Kailash_ISPASS2024/Datasets/Taxi_v3_experiences_5m.txt", "r");
     if (file == NULL) {
         perror("Error opening the data file");
         return 1;

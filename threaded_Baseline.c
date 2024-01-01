@@ -14,7 +14,7 @@
 #define GAMMA 0.95
 #define NUM_EPISODES 2000
 #define BATCH_SIZE 500
-#define BATCH_CAPACITY 1000000
+#define BATCH_CAPACITY 5000000
 #define NUM_STRIDE 4  // Define a stride value
 #define EPSILON 0.1 // For epsilon-greedy policy
 
@@ -85,10 +85,10 @@ void update_q_table(Experience experience, double (*q_table)[NUM_ACTIONS]) {
 
 // Function to choose the next action based on the epsilon-greedy policy
 int sarsa_choose_action(unsigned int *seed, int state, double (*q_table) [num_actions]) {
-    double rand_val = (double)custom_rand(seed) / RAND_MAX;
+    unsigned int rand_val = (double)custom_rand(seed) / RAND_MAX;
     if (rand_val < EPSILON) {
         // Exploration: choose a random action
-        return rand() % num_actions;
+        return rand_val % num_actions;
     } else {
         // Exploitation: choose the best action based on the Q-table
         int best_action = 0;
